@@ -45,6 +45,19 @@ def scrape_fuel_prices():
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
     
+    # Set timezone to IST (Indian Standard Time)
+    options.add_argument("--lang=en-IN")
+    
+    # Set timezone preference
+    prefs = {
+        "profile.default_content_setting_values.geolocation": 2,
+        "profile.managed_default_content_settings.geolocation": 2
+    }
+    options.add_experimental_option("prefs", prefs)
+    
+    # Set environment variable for timezone
+    os.environ['TZ'] = 'Asia/Kolkata'
+    
     # Try to use system Chrome first, fallback to ChromeDriverManager
     try:
         # First try with system chromedriver
@@ -62,6 +75,28 @@ def scrape_fuel_prices():
     
     try:
         driver.get(url)
+        
+        # Set timezone to IST using JavaScript
+        driver.execute_script("""
+            // Override timezone to IST
+            const originalDate = Date;
+            Date = function(...args) {
+                if (args.length === 0) {
+                    const now = new originalDate();
+                    // Add 5.5 hours to UTC to get IST
+                    const istOffset = 5.5 * 60 * 60 * 1000;
+                    return new originalDate(now.getTime() + istOffset);
+                }
+                return new originalDate(...args);
+            };
+            Date.now = function() {
+                const now = originalDate.now();
+                const istOffset = 5.5 * 60 * 60 * 1000;
+                return now + istOffset;
+            };
+            Object.setPrototypeOf(Date, originalDate);
+            Object.setPrototypeOf(Date.prototype, originalDate.prototype);
+        """)
         
         # Wait for the "current-hour" element to be present and contain text
         wait = WebDriverWait(driver, 20)
