@@ -33,13 +33,32 @@ def scrape_fuel_prices():
     """
     url = "https://am4-helper.web.app/tabs/prices"
     
-    # Set up headless Chrome
+    # Set up headless Chrome for Linux server
     options = webdriver.ChromeOptions()
-    options.add_argument("--headless")
+    options.add_argument("--headless=new")  # Use new headless mode
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--disable-web-security")
+    options.add_argument("--disable-features=VizDisplayCompositor")
+    options.add_argument("--remote-debugging-port=9222")
+    options.add_argument("--window-size=1920,1080")
+    options.add_argument("--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
     
-    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+    # Try to use system Chrome first, fallback to ChromeDriverManager
+    try:
+        # First try with system chromedriver
+        driver = webdriver.Chrome(options=options)
+    except Exception as e1:
+        print(f"Failed to use system Chrome, trying ChromeDriverManager: {e1}")
+        try:
+            driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+        except Exception as e2:
+            print(f"ChromeDriverManager also failed: {e2}")
+            print("Please ensure Chrome/Chromium is installed on your Linux server:")
+            print("Ubuntu/Debian: sudo apt-get update && sudo apt-get install -y chromium-browser")
+            print("CentOS/RHEL: sudo yum install -y chromium")
+            sys.exit(1)
     
     try:
         driver.get(url)

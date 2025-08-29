@@ -8,18 +8,31 @@ This script scrapes fuel prices from AM4 Helper and sends Discord notifications 
 
 ## Setup
 
-1. **Install dependencies:**
+### Linux Server Setup
+
+1. **Install Chrome/Chromium:**
+   ```bash
+   # Ubuntu/Debian
+   sudo apt-get update && sudo apt-get install -y chromium-browser
+
+   # CentOS/RHEL/Fedora
+   sudo yum install -y chromium
+   # or
+   sudo dnf install -y chromium
+   ```
+
+2. **Install Python dependencies:**
    ```bash
    pip install -r requirements.txt
    ```
 
-2. **Configure environment variables:**
+3. **Configure environment variables:**
    ```bash
    cp .env.example .env
    # Edit .env with your Discord webhook URL and thresholds
    ```
 
-3. **Test the script:**
+4. **Test the script:**
    ```bash
    python fuel_scraper.py
    ```
